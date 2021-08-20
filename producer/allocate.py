@@ -209,51 +209,6 @@ def assign_apertures(objx, objy, apx, apy, collision=1/6., patrol=2.3, ignore_ob
     return assigned_obj, assigned_ap
 
 
-def random_targets(r, n=None, density=5., rng=None):
-    r"""
-    Draw a set of random x and y coordinates within a circle.
-
-    Args:
-        r (:obj:`float`):
-            Radius of the circle.
-        n (:obj:`int`, optional):
-            The total number of points to draw.  If None, number drawn
-            based on the density requested.
-        density (:obj:`float`, optional):
-            The average density of targets within the circle.  This is
-            used to calculate the number of points to generate within
-            the circle: ``n = int(np.ceil(density*np.pi*r**2))``.  Units
-            must be appropriate match radius units.  
-        rng (`numpy.random.Generator`_, optional):
-            Random number generator to use.  If None, a new one is
-            instantiated using `numpy.random.default_rng`_.
-
-    Returns:
-        `numpy.ndarray`_: Array of shape :math:`(N_{\rm targ}, 2)`,
-        where :math:`N_{\rm targ}` is the number of targets.  Cartesian
-        x coordinates are in the first column, y coordinates in the
-        second.
-    """
-    # Calculate the number of points to match an expected density
-    if n is None:
-        n = int(np.ceil(density*np.pi*r**2))
-    if rng is None:
-        rng = np.random.default_rng()
-
-    c = np.empty((0,2), dtype=float)
-    overdraw = 1.5
-    while c.shape[0] != n:
-        # Draw 50% more points than needed within the unit square
-        c = rng.uniform(low=-1, high=1, size=(int(n*overdraw),2))
-        # Find those within the r = 1
-        indx = c[:,0]**2 + c[:,1]**2 < 1
-        c = c[indx][:n]
-        # Increase overdraw for next iteration
-        overdraw *= 1.1
-    
-    return r*c[:,0], r*c[:,1]
-
-
 def parse_fobos_mode(mode):
     """
     Parse and validate the provided FOBOS spectrograph mode.
