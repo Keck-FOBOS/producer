@@ -5,6 +5,8 @@ Main execution script for FOBOS Observation Planning.
 .. include:: ../include/links.rst
 """
 
+from IPython import embed
+
 from . import scriptbase
 
 
@@ -48,10 +50,11 @@ class MakePlan(scriptbase.ScriptBase):
     @staticmethod
     def main(args):
 
-        from .targets import parse_targets
+        from ..targets import parse_targets
 
         if len(args.columns) == 2:
             ra_c, dec_c = args.columns
+            ap_c = None
         elif len(args.columns) == 3:
             ra_c, dec_c, ap_c = args.columns
         else:
@@ -59,5 +62,8 @@ class MakePlan(scriptbase.ScriptBase):
 
         ra, dec, ap = parse_targets(args.target_file, ra_c=ra_c, dec_c=dec_c, ap_c=ap_c,
                                     default_ap=args.ap_type)
+
+        embed()
+        exit()
 
 
