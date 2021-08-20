@@ -1,0 +1,18 @@
+include README.md
+include LICENSE.md
+#include pyproject.toml
+include setup.cfg
+
+recursive-include producer *.pyx *.c *.pxd *.h
+recursive-include producer/data *
+recursive-include docs *
+#recursive-include licenses *
+#recursive-include cextern *
+recursive-include scripts *
+
+prune build
+prune docs/_build
+prune docs/api
+
+global-exclude *.pyc *.o *.so *.DS_Store
+
