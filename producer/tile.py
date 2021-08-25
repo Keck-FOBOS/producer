@@ -11,6 +11,8 @@ import numpy
 
 from scipy import spatial
 
+from matplotlib import pyplot, patches
+
 from sklearn.neighbors import KDTree
 
 from astropy import units
@@ -18,6 +20,7 @@ from astropy import coordinates
 
 from . import hexgrid
 from . import util
+from .astrometry import focal_plane_offsets
 
 
 # TODO: 
@@ -30,7 +33,8 @@ from . import util
 #     better coordinate projection to use?  Break the data up into chunks (see
 #     pydl spheregroup)?
 #   - Use BallTree instead of KDTree?
-def uniform_tiles(ra, dec, grid_center=None, min_dens=None, min_n=None, fov=20./60.):
+def uniform_tiles(ra, dec, grid_center=None, min_dens=None, min_n=None, fov=20./60.,
+                  half_offset=False):
     """
     Construct a uniform grid of FOBOS pointings to observe a set of targets.
 
@@ -59,6 +63,11 @@ def uniform_tiles(ra, dec, grid_center=None, min_dens=None, min_n=None, fov=20./
             grid is constructed using hexagons with the circular field-of-view
             as the circumcircle of each hexagonal grid cell.  See
             :func:`~producer.hexgrid.hexgrid`.
+        half_offset (:obj:`bool`, optional):
+            Offset the center by half the field of view.  If not grid center is
+            provided, offset the default grid center (the mean of the provided
+            target coordinates) by half of the field-of-view.  Ignored if
+            ``grid_center`` is provided.
 
     Returns:
         `numpy.ndarray`_: A 2D `numpy.ndarray`_ with field centers vectors with
@@ -70,26 +79,22 @@ def uniform_tiles(ra, dec, grid_center=None, min_dens=None, min_n=None, fov=20./
         min_n = 0 if min_dens is None else min_dens * hexgrid.hexarea(d=fov)
 
     if grid_center is None:
-        grid_center = (numpy.mean(ra), numpy.mean(dec))
+        # TODO: Need to consider spherical geometry here!
+        grid_center = (numpy.mean(ra) + (fov/2. if half_offset else 0.), numpy.mean(dec))
 
     # Project the coordinates to the tangent plane
     ntarg = ra.size
-    center = coordinates.SkyCoord(grid_center[0]*units.deg, grid_center[1]*units.deg, frame='icrs')
-    targets = coordinates.SkyCoord(ra*units.deg, dec*units.deg, frame='icrs')
-    targ_offsets = targets.transform_to(coordinates.SkyOffsetFrame(origin=center))
-    x = targ_offsets.lon.value
-    y = targ_offsets.lat.value
-    coo = numpy.column_stack((x,y))
+    coo = numpy.column_stack(focal_plane_offsets(ra, dec, grid_center))
 
     # Get the length of the long axis for the grid
     hull = spatial.ConvexHull(coo).vertices
     i, j = map(lambda x: hull[x], numpy.triu_indices(len(hull), k=1))
-    sep = numpy.sqrt((x[i] - x[j])**2 + (y[i] - y[j])**2)
+    sep = numpy.sqrt((coo[i,0] - coo[j,0])**2 + (coo[i,1] - coo[j,1])**2)
     ii = numpy.argmax(sep)
     # Set the grid width so that its short axis is the same length as the
     # longest span of the coordinates
     width = hexgrid.hexgrid_circle_convert(sep[ii], incircle=True)
-    rot = numpy.arctan2(y[i[ii]] - y[j[ii]], x[i[ii]] - x[j[ii]])
+    rot = numpy.arctan2(coo[i[ii],1] - coo[j[ii],1], coo[i[ii],0] - coo[j[ii],0])
 
     # Get the number of grid cells along the long axis of the target distribution
     n = int(numpy.ceil(width/fov)) - 2
@@ -116,13 +121,51 @@ def uniform_tiles(ra, dec, grid_center=None, min_dens=None, min_n=None, fov=20./
     keep_grid = numpy.array([g.size > min_n for g in groups])
 
     # Revert back to on-sky coordinates and return the grid centers
-    grid_coo = coordinates.SkyCoord(grid[keep_grid,0]*units.deg, grid[keep_grid,1]*units.deg,
-                                    frame=center.skyoffset_frame())
-    grid_coo = coordinates.SkyCoord(grid_coo.frame.transform_to(coordinates.ICRS()))
-    return numpy.column_stack((grid_coo.ra.value, grid_coo.dec.value))
+    return numpy.column_stack(focal_plane_offsets(grid[keep_grid,0], grid[keep_grid,1],
+                                                  grid_center, revert=True))
 
 
+# TODO: Add projection type...
+def show_tiles(tile_coo, ra=None, dec=None, fov=20./60., return_ax=False):
+    """
+    Args:
+        tile_coo (`numpy.ndarray`_):
+            Tile coordinates in RA (first column) and DEC (second column).
+        ra (`numpy.ndarray`_, optional):
+            Right ascension of objects to observe in decimal degrees.
+        dec (`numpy.ndarray`_, optional):
+            Declination of objects to observe in decimal degrees.
+        fov (:obj:`float`, optional):
+            The *diameter* of the field of view in decimal degrees.  The uniform
+            grid is constructed using hexagons with the circular field-of-view
+            as the circumcircle of each hexagonal grid cell.  See
+            :func:`~producer.hexgrid.hexgrid`.
+        return_ax (:obj:`bool`, optional):
+            Instead of showing the plot, return the axis instance.
 
+    Returns:
+        Axis: Axis instance.  If ``return_ax`` is False, this is returned as
+        None.
+    """
+    d = numpy.amax(numpy.amax(tile_coo, axis=0) - numpy.amin(tile_coo, axis=0)) + 2*fov
+    xlim, ylim = numpy.mean(tile_coo, axis=0)[:,None] + numpy.array([-d/2, d/2])[None,:]
+
+    w,h = pyplot.figaspect(1)
+    fig = pyplot.figure(figsize=(2.*w,2.*h))
+    ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
+    if ra is not None and dec is not None:
+        ax.scatter(ra, dec, marker='.', s=30, lw=0, color='k', zorder=3, alpha=0.1)
+    for i, c in enumerate(tile_coo):
+        ax.add_patch(patches.Circle((c[0],c[1]), radius=fov/2, facecolor='C0', edgecolor='C0',
+                                    zorder=5, alpha=0.1))
+        ax.text(c[0], c[1], f'{i+1}', ha='center', va='center', color='C0', fontsize=16)
+    if return_ax:
+        return ax
+    
+    pyplot.show()
+    return None
 
 
 

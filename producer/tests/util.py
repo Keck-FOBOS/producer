@@ -2,12 +2,7 @@
 Testing utilities
 """
 
-from pathlib import Path
-from pkg_resources import resource_filename
-
-def data_file(filename=None):
-    root = Path(resource_filename('producer', 'data')).resolve()
-    return root if filename is None else root / filename
+from producer import data_file
 
 def test_data_file(filename=None):
     root = data_file() / 'tests'

@@ -22,3 +22,12 @@ __version__ = version
 __coverage__ = 0.55
 
 
+from pathlib import Path
+from pkg_resources import resource_filename
+
+
+def data_file(filename=None):
+    root = Path(resource_filename('producer', 'data')).resolve()
+    return root if filename is None else root / filename
+
+

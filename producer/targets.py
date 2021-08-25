@@ -58,7 +58,7 @@ def random_targets(r, n=None, density=5., rng=None):
     return r*c[:,0], r*c[:,1]
 
 
-def parse_targets(ifile, ra_c=1, dec_c=2, ap_c=None, default_ap=1):
+def parse_targets(ifile, ra_c=1, dec_c=2, ap_c=None, default_ap=0):
     """
     Parse target coordinates and aperture types from an input file.
 
@@ -74,20 +74,20 @@ def parse_targets(ifile, ra_c=1, dec_c=2, ap_c=None, default_ap=1):
         ap_c (:obj:`int`, optional):
             1-indexed column with the aperture type to assign to each target.
             If None, the type is not available in the input file and the
-            ``default_types`` is used for all targets.  Apertures must be 1 for
-            a single fiber or 2 for an IFU.
+            ``default_types`` is used for all targets.  Apertures must be 0 for
+            a single fiber or 1 for an IFU.
         default_ap (:obj:`int`, optional):
             If the aperture types are not provided in the file, this sets the
-            type to assign to *all* apertures.  Apertures must be 1 for a single
-            fiber or 2 for an IFU.
+            type to assign to *all* apertures.  Apertures must be 0 for a single
+            fiber or 1 for an IFU.
 
     Returns:
         :obj:`tuple`: Three numpy vectors with the coordinates and aperture type
         for each target.
     """
     # Check the input
-    if default_ap not in [1, 2]:
-        raise ValueError('Default aperture type must be 1 (single-fiber) or 2 (IFU).')
+    if default_ap not in [0, 1]:
+        raise ValueError('Default aperture type must be 0 (single-fiber) or 1 (IFU).')
     # Instantiate the file path
     p = Path(ifile).resolve()
     # Check it exists
