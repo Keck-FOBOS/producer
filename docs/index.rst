@@ -1,5 +1,4 @@
 
-.. include links
 .. include:: include/links.rst
 
 FOBOS Producer: Observation Planning
@@ -10,10 +9,20 @@ The FOBOS Producer is used to plan FOBOS observations.
 ----
 
 .. toctree::
-   :caption: Usage
+   :caption: Setup
    :maxdepth: 1
 
    installation
+
+----
+
+.. toctree::
+   :caption: Usage
+   :maxdepth: 1
+
+   layout
+   makeplan
+   knownissues
 
 ----
 

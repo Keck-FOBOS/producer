@@ -1,6 +1,12 @@
 
 .. python
 .. _python.org: https://www.python.org/
+.. _anaconda: https://www.anaconda.com/products/individual
+.. _conda: https://docs.conda.io/projects/conda/en/latest/index.html
+.. _Conda Environments: https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html
+.. _virtualenv: https://virtualenv.pypa.io/en/latest/
+.. _pyenv: https://github.com/pyenv/pyenv
+
 
 .. core
 .. _glob.glob: https://docs.python.org/3/library/glob.html
@@ -74,13 +80,6 @@
 .. scikit-learn
 .. _sklearn.decomposition.PCA: https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html
 
-.. pydl
-.. _pydl.goddard.astro.airtovac: http://pydl.readthedocs.io/en/stable/api/pydl.goddard.astro.airtovac.html#pydl.goddard.astro.airtovac
-.. _pydl.pydlutils.yanny: http://pydl.readthedocs.io/en/stable/api/pydl.pydlutils.yanny.yanny.html
-
-.. linetools
-.. _linetools.spectra.xspectrum1d.XSpectrum1D: https://linetools.readthedocs.io/en/latest/xspectrum1d.html
-
 .. sphinx
 .. _Sphinx: https://www.sphinx-doc.org/en/master/index.html
 .. _reStructuredText: http://docutils.sourceforge.net/rst.html
@@ -91,9 +90,6 @@
 .. _bumpversion: https://pypi.org/project/bumpversion/
 .. _rclone: https://rclone.org/
 .. _pip: https://pip.pypa.io/en/stable/
-.. _anaconda: https://www.anaconda.com/products/individual
-.. _conda: https://docs.conda.io/projects/conda/en/latest/index.html
-.. _virtualenv: https://virtualenv.pypa.io/en/latest/
 .. _pdb: https://docs.python.org/3/library/pdb.html
 .. _IPython.embed: https://ipython.readthedocs.io/en/stable/api/generated/IPython.terminal.embed.html#function
 .. _pytest: https://docs.pytest.org/en/latest/

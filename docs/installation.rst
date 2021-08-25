@@ -1,8 +1,27 @@
 
 .. include:: include/links.rst
 
+.. _install:
+
 Installation
 ============
+
+Install Python 3
+----------------
+
+The FOBOS Producer is supported for Python 3 only. To install Python,
+you can do so along with a full package manager, like `Anaconda`_, or
+you can install python 3 directly from `python.org`_.
+
+Python environment
+------------------
+
+We strongly recommend you setup a fresh python environment for installation and
+use of the FOBOS producer.  See, for example:
+
+ - `Anaconda`_, specifically `Conda Environments`_
+ - `virtualenv`_
+ - `pyenv`_
 
 Clone the repo
 --------------
@@ -14,15 +33,8 @@ executing:
 
         git clone https://github.com/Keck-FOBOS/producer.git
 
-This will create a ``producer`` directory in the current directory.
-
-Install Python 3
-----------------
-
-The FOBOS Producer is supported for Python 3 only. To install Python,
-you can do so along with a full package manager, like `Anaconda`_, or
-you can install python 3 directly from `python.org`_.
-
+This will create a new ``producer`` directory in the directory where the command
+is executed.
 
 Install from source
 -------------------
@@ -34,32 +46,47 @@ met is to, from the top-level directory, run:
 
     pip install -e .
 
-This approach is preferred because it eases uninstalling the code:
+Importantly, note that this will upgrade/install FOBOS producer python package
+dependencies, which is why it's useful to isolate the code to its own
+environment.  To include the development dependencies, run:
+
+.. code-block:: console
+
+    pip install -e ".[dev]"
+
+Note that use of the quotes is shell dependent; e.g., you need them for zshell
+(the current default Mac shell), but they'll cause a fault in bash.
+
+Installation in this way should also means that changes made to the code
+should take effect immediately when re-running code.
+
+Uninstall
+---------
+
+Installation via pip is preferred because it eases uninstalling the code:
 
 .. code-block:: console
     
     pip uninstall fobos-producer
-
-Installation in this way should also mean that changes made to the code
-should take immediate effect when you restart the calling python
-session.
 
 ----
 
 Test your installation
 ----------------------
 
-To test the installation, use ``pytest``:
+If you've installed with the developer dependencies, you can test the
+installation using ``pytest``:
 
 .. code-block:: console
 
     cd producer/tests
     pytest . -W ignore
 
+
 Problems?
 ---------
 
-We have limited support to offer installation help. However, if you
-have problems, particularly those that you think may be a more
-general problem, please `Submit an issue`_.
+If you have problems, particularly those that you think may be a more general
+problem, please `Submit an issue`_.
+
 

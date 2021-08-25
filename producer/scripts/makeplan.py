@@ -54,6 +54,11 @@ class MakePlan(scriptbase.ScriptBase):
         parser.add_argument('--tile_only', default=False, action='store_true',
                             help='Only show the tiling of the input coordinates.')
 
+        parser.add_argument('--max_nobs', default=None, type=int,
+                            help='Maximum number of times to revisit a FOBOS pointing to '
+                                 'acquire new targets.  If None, pointings will be revisited '
+                                 'until there are no more objects to observe.')
+
         return parser
 
     @staticmethod
@@ -85,7 +90,9 @@ class MakePlan(scriptbase.ScriptBase):
 
         root = target_file.parent / target_file.stem \
                     if args.root is None else Path(args.root).resolve()
-
+        if not root.parent.is_dir():
+            root.parent.mkdir()
+            
         # TODO: Allow for different exposure time per object...
         print('-'*70)
         ra, dec, ap = parse_targets(str(target_file), ra_c=ra_c, dec_c=dec_c, ap_c=ap_c,
@@ -114,7 +121,8 @@ class MakePlan(scriptbase.ScriptBase):
             print(f'Allocating FOBOS apertures in tile {i+1}.')
             # Offset coordinates from tile center in arcmin
             x, y = map(lambda x : x*60, focal_plane_offsets(ra, dec, tuple(tile)))
-            n_in_fov, obs_obj, obs_nap, obs_ap, obs_mode = plan.configure_observations(x, y, ap)
+            n_in_fov, obs_obj, obs_nap, obs_ap, obs_mode \
+                    = plan.configure_observations(x, y, ap, max_nobs=args.max_nobs)
             plan.report_configurations(n_in_fov, obs_obj, obs_nap, obs_ap, obs_mode)
             plan.write_configurations(f'{str(root)}_{i+1:0{ndig}}', ra, dec, tile, obs_obj, obs_ap,
                                       obs_mode, tight=True, target_file=str(target_file),

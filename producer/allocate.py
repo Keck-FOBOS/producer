@@ -19,7 +19,7 @@ from .collisions import remove_collisions
 
 
 def assign_apertures_plot(objx, objy, apx, apy, assigned_obj, assigned_ap, collision=1/6.,
-                          ignore_obj=None, ignore_ap=None):
+                          ignore_obj=None, ignore_ap=None, zoom=0.75):
     """
     Show a plot of the aperture assignments.  I.e.:
 
@@ -61,35 +61,61 @@ def assign_apertures_plot(objx, objy, apx, apy, assigned_obj, assigned_ap, colli
             An integer array with the indices of apertures that were *ignored*
             during assignment.  If None, all apertures were included in the
             assignment attempt.
+        zoom (:obj:`float`, optional):
+            Factor to zoom in default limits of the plot relative to the nominal
+            set by the extent of the allocated targets.  For example, ``zoom=2``
+            means to *decrease* the plot range by a factor of two; to zoom out,
+            use a zoom value that is less than 1.
     """
-    xlim = [min(numpy.amin(objx[assigned_obj])-3*collision,
-                numpy.amin(objy[assigned_obj])-3*collision),
-            max(numpy.amax(objy[assigned_obj])+3*collision,
-                numpy.amax(objx[assigned_obj])+3*collision)]
+    # Get the required width in each direction
+    Dx = (numpy.amax(objx[assigned_obj]) - numpy.amin(objx[assigned_obj]))/zoom
+    Dy = (numpy.amax(objy[assigned_obj]) - numpy.amin(objy[assigned_obj]))/zoom
+    # Force it to be square
+    D = max(Dx, Dy)
+    
+    xlim = numpy.mean(objx[assigned_obj]) + numpy.array([-D/2, D/2])
+    ylim = numpy.mean(objy[assigned_obj]) + numpy.array([-D/2, D/2])
 
     w,h = pyplot.figaspect(1)
     fig = pyplot.figure(figsize=(1.5*w,1.5*h))
     ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
     ax.set_xlim(xlim)
     ax.set_ylim(xlim)
+    ax.minorticks_on()
+    ax.grid(True, which='major', color='0.9', zorder=0, linestyle='-')
+    ax.tick_params(which='major', direction='in', length=8, top=True, right=True)
+    ax.tick_params(which='minor', direction='in', length=4, top=True, right=True)
 
-    for _x, _y in zip(objx[assigned_obj], objy[assigned_obj]):
+    for i, (_x, _y) in enumerate(zip(objx[assigned_obj], objy[assigned_obj])):
+        kwargs = {} # if i > 0 else {'label': 'Assigned Aper.'}
         ax.add_patch(patches.Circle((_x,_y), radius=collision/2., facecolor='C0',
-                                    edgecolor='none', zorder=0, alpha=0.2))
+                                    edgecolor='none', zorder=0, alpha=0.2, **kwargs))
     if len(assigned_ap) != apx.size:
         unassigned = numpy.setdiff1d(numpy.arange(apx.size), assigned_ap)
         if ignore_ap is not None:
             unassigned = numpy.setdiff1d(unassigned, ignore_ap)
-        for _x, _y in zip(apx[unassigned], apy[unassigned]):
-            ax.add_patch(patches.Circle((_x,_y), radius=collision/2., facecolor='C3',
-                                        edgecolor='none', zorder=0, alpha=0.2))
+        for i, (_x, _y) in enumerate(zip(apx[unassigned], apy[unassigned])):
+            kwargs = {} # if i > 0 else {'label': 'Unassigned Aper.'}
+            ax.add_patch(patches.Circle((_x,_y), radius=collision/2., facecolor='C1',
+                                        edgecolor='none', zorder=0, alpha=0.2, **kwargs))
 
-    ax.scatter(objx[assigned_obj], objy[assigned_obj], marker='.', color='C0', s=30, lw=0)
+    ax.scatter(objx[assigned_obj], objy[assigned_obj], marker='.', color='C0', s=30, lw=0,
+               label='Alloc. Target')
     if len(assigned_obj) != objx.size:
         unassigned = numpy.setdiff1d(numpy.arange(objx.size), assigned_obj)
         if ignore_obj is not None:
             unassigned = numpy.setdiff1d(unassigned, ignore_obj)
-        ax.scatter(objx[unassigned], objy[unassigned], marker='.', color='C3', s=30, lw=0)
+        ax.scatter(objx[unassigned], objy[unassigned], marker='.', color='C1', s=30, lw=0,
+                   label='Unalloc. Target')
+
+    # FOBOS field-of-view
+    ax.add_patch(patches.Circle((0.,0.), radius=10., facecolor='none', edgecolor='C3',
+                                zorder=4))
+
+    ax.set_xlabel(r'$\xi$ [arcmin]')
+    ax.set_ylabel(r'$\eta$ [arcmin]')
+    # TODO: The legend really slows down the plot...
+#    ax.legend()
     
     pyplot.show()
 

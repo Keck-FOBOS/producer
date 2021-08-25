@@ -124,6 +124,8 @@ class FOBOSApertures:
         self.in_baseline = _data[:,11].astype(int).astype(bool)
 
         self.payload = _data[:,10].astype(int)
+
+        # Initialize the aperture types based only on the payload type.
         self.type = numpy.zeros(self.nap, dtype=self.ap_bm.minimum_dtype(asuint=True))
         indx = numpy.isin(self.payload, [0,1,2])
         self.type[indx] = self.ap_bm.turn_on(self.type[indx], 'SCIENCE')
@@ -226,10 +228,14 @@ class FOBOSApertures:
         else:
             raise ValueError(f'Spectrograph configuration {config} unknown.  Must be 1 or 2.')
 
+        # Reset all science and sky apertures
+        indx = numpy.isin(self.payload, [0,1,2])
+        self.type[indx] = self.ap_bm.turn_on(self.type[indx], 'SCIENCE')
+        self.type = self.ap_bm.turn_off(self.type, 'SKY')
+
         # Loop through each spectrograph to find the active apertures and set
         # their type.
         self.active = numpy.zeros(self.nap, dtype=bool)
-        self.type = self.ap_bm.turn_off(self.type, 'SKY')
         for i in range(3):
             if self.mode[i] == 0:
                 continue
@@ -238,6 +244,7 @@ class FOBOSApertures:
             # Set sky fibers (if any)
             indx = self.mode_bm.flagged(self.sky, _mode)
             if numpy.any(indx):
+                self.type[indx] = self.ap_bm.turn_off(self.type[indx], 'SCIENCE')
                 self.type[indx] = self.ap_bm.turn_on(self.type[indx], 'SKY')
 
         # Restrict based on baseline
@@ -273,7 +280,7 @@ class FOBOSApertures:
                              f"{', '.join(valid)}")
         return self.active & self.ap_bm.flagged(self.type, payload.upper())
 
-    def show(self, include_patrol=False):
+    def show(self, include_patrol=False, by_spec=False, legend=True):
         """
         Make a plot of the currently active apertures.
 
@@ -281,6 +288,11 @@ class FOBOSApertures:
             include_patrol (:obj:`bool`, optional):
                 Use a light shaded region to show the patrol region of every
                 aperture.
+            by_spec (:obj:`bool`, optional):
+                Instead of coloring the aperture locations by their payload
+                type, color them by their spectrograph mapping.
+            legend (:obj:`bool`, optional):
+                Include the plot legend
         """
 
         w,h = pyplot.figaspect(1)
@@ -295,20 +307,57 @@ class FOBOSApertures:
 
         # Single fibers
         indx = self.active & (self.payload == 0)
-        ax.scatter(self.coo[indx,0], self.coo[indx,1],
-                   marker='.', s=30, lw=0, color='C1', zorder=5, label='Single Fiber')
+        if by_spec:
+            _indx = indx & (self.spc == 1)
+            ax.scatter(self.coo[_indx,0], self.coo[_indx,1],
+                       marker='.', s=40, lw=0, color='C0', zorder=5, label='Single Fiber (Spec 1)')
+            _indx = indx & (self.spc == 2)
+            ax.scatter(self.coo[_indx,0], self.coo[_indx,1],
+                       marker='.', s=40, lw=0, color='C2', zorder=5, label='Single Fiber (Spec 2)')
+            _indx = indx & (self.spc == 3)
+            ax.scatter(self.coo[_indx,0], self.coo[_indx,1],
+                       marker='.', s=40, lw=0, color='C4', zorder=5, label='Single Fiber (Spec 3)')
+        else:
+            ax.scatter(self.coo[indx,0], self.coo[indx,1],
+                    marker='.', s=40, lw=0, color='C1', zorder=5, label='Single Fiber')
         # IFUs
         indx = self.active & (self.payload == 1)
-        ax.scatter(self.coo[indx,0], self.coo[indx,1],
-                   marker='s', s=20, lw=0.5, color='C2',zorder=5, label='IFU')
+        if by_spec:
+            _indx = indx & (self.spc == 1)
+            ax.scatter(self.coo[_indx,0], self.coo[_indx,1],
+                       marker='s', s=20, lw=0.5, color='C0',zorder=5, label='IFU (Spec 1)')
+            _indx = indx & (self.spc == 2)
+            ax.scatter(self.coo[_indx,0], self.coo[_indx,1],
+                       marker='s', s=20, lw=0.5, color='C2',zorder=5, label='IFU (Spec 2)')
+            _indx = indx & (self.spc == 3)
+            ax.scatter(self.coo[_indx,0], self.coo[_indx,1],
+                       marker='s', s=20, lw=0.5, color='C4',zorder=5, label='IFU (Spec 3)')
+        else:
+            ax.scatter(self.coo[indx,0], self.coo[indx,1],
+                       marker='s', s=20, lw=0.5, color='C2',zorder=5, label='IFU')
+
         # Guide bundles
         indx = self.active & (self.payload == 3)
         ax.scatter(self.coo[indx,0], self.coo[indx,1],
-                   marker='o', s=20, lw=0.5, color='C0', zorder=5, label='Guide Bundle')
+                    marker='o', s=20, lw=0.5, color='C3', zorder=5, label='Guide Bundle')
         # Flux-calibration bundles
         indx = self.active & (self.payload == 4)
-        ax.scatter(self.coo[indx,0], self.coo[indx,1],
-                   marker='x', s=20, lw=1, color='C4', zorder=5, label='Calib. Bundle')
+        if by_spec:
+            _indx = indx & (self.spc == 1)
+            ax.scatter(self.coo[_indx,0], self.coo[_indx,1],
+                       marker='x', s=20, lw=1, color='C0', zorder=5, label='Calib. Bundle (Spec 1)')
+            _indx = indx & (self.spc == 2)
+            ax.scatter(self.coo[_indx,0], self.coo[_indx,1],
+                       marker='x', s=20, lw=1, color='C2', zorder=5, label='Calib. Bundle (Spec 1)')
+            _indx = indx & (self.spc == 3)
+            ax.scatter(self.coo[_indx,0], self.coo[_indx,1],
+                       marker='x', s=20, lw=1, color='C4', zorder=5, label='Calib. Bundle (Spec 1)')
+        else:
+            ax.scatter(self.coo[indx,0], self.coo[indx,1],
+                       marker='x', s=20, lw=1, color='C4', zorder=5, label='Calib. Bundle')
+
+        # Include the patrol region (this in combination with the legend can
+        # make the plot very slow)
         if include_patrol:
             indx = self.active & numpy.isin(self.payload, [0,1,3,4])
             for x, y in self.coo[indx]:
@@ -317,12 +366,11 @@ class FOBOSApertures:
         # FOBOS field-of-view
         ax.add_patch(patches.Circle((0.,0.), radius=10., facecolor='none', edgecolor='C3',
                                     zorder=4, label='FOBOS FOV'))
-        ax.legend()
+        if legend:
+            ax.legend()
         ax.set_xlabel(r'$\xi$ [arcmin]')
         ax.set_ylabel(r'$\eta$ [arcmin]')
         pyplot.show()
-
-
 
 
 

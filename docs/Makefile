@@ -19,11 +19,14 @@ clean:
 
 apirst:
 	SPHINX_APIDOC_OPTIONS=$(SPHINXAPIOPT) $(SPHINXAPI) --separate -o ./api ../producer ../producer/tests/* ../producer/scripts/* 
+	python ./scripts/write_script_help.py
+	python ./scripts/fobos_layout_table.py
 
 html:
 	make apirst
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
-	@echo
-	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
+htmlonly:
+	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 
 

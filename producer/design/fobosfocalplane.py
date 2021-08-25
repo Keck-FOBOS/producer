@@ -236,10 +236,17 @@ def _special_module_mode_config1(active_bits, sky_bits, module_id):
         # mode only
         _active_bits[[0,4,10,11,13]] = bm.turn_on(_active_bits[[0,4,10,11,13]], 'MOS')
         return _active_bits, _sky_bits
-    if module_id in [38, 49, 58, 59, 70, 80]:
+    if module_id in [49, 59, 70]:
         # Turn on the outer ring of fibers for use as sky fibers during
         # the monolithic IFU mode
-        indx = [0,1,2,3,6,7,11,12,15,16,17,18]
+        indx = [0,1,2,3,6,7,8,10,11,12,15,16,17,18]
+        _active_bits[indx] = bm.turn_on(_active_bits[indx], 'MONO')
+        _sky_bits[indx] = bm.turn_on(_sky_bits[indx], 'MONO')
+        return _active_bits, _sky_bits
+    if module_id in [38, 58, 80]:
+        # Turn on the outer ring of fibers for use as sky fibers during
+        # the monolithic IFU mode
+        indx = [0,1,2,3,6,7,8,11,12,15,16,17,18]
         _active_bits[indx] = bm.turn_on(_active_bits[indx], 'MONO')
         _sky_bits[indx] = bm.turn_on(_sky_bits[indx], 'MONO')
         return _active_bits, _sky_bits
@@ -266,10 +273,17 @@ def _special_module_mode_config2(active_bits, sky_bits, module_id):
         # mode only
         _active_bits[[0,4,10,11,13]] = bm.turn_on(_active_bits[[0,4,10,11,13]], 'MOS')
         return _active_bits, _sky_bits
-    if module_id in [14, 15, 54, 65, 70, 80]:
+    if module_id in [14, 65, 70]:
         # Turn on the outer ring of fibers for use as sky fibers during
         # the monolithic IFU mode
-        indx = [0,1,2,3,6,7,11,12,15,16,17,18]
+        indx = [0,1,2,3,6,7,8,10,11,12,15,16,17,18]
+        _active_bits[indx] = bm.turn_on(_active_bits[indx], 'MONO')
+        _sky_bits[indx] = bm.turn_on(_sky_bits[indx], 'MONO')
+        return _active_bits, _sky_bits
+    if module_id in [15, 54, 80]:
+        # Turn on the outer ring of fibers for use as sky fibers during
+        # the monolithic IFU mode
+        indx = [0,1,2,3,6,7,8,11,12,15,16,17,18]
         _active_bits[indx] = bm.turn_on(_active_bits[indx], 'MONO')
         _sky_bits[indx] = bm.turn_on(_sky_bits[indx], 'MONO')
         return _active_bits, _sky_bits

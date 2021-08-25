@@ -155,12 +155,18 @@ def show_tiles(tile_coo, ra=None, dec=None, fov=20./60., return_ax=False):
     ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
+    ax.minorticks_on()
+    ax.grid(True, which='major', color='0.9', zorder=0, linestyle='-')
+    ax.tick_params(which='major', direction='in', length=8, top=True, right=True)
+    ax.tick_params(which='minor', direction='in', length=4, top=True, right=True)
     if ra is not None and dec is not None:
         ax.scatter(ra, dec, marker='.', s=30, lw=0, color='k', zorder=3, alpha=0.1)
     for i, c in enumerate(tile_coo):
         ax.add_patch(patches.Circle((c[0],c[1]), radius=fov/2, facecolor='C0', edgecolor='C0',
                                     zorder=5, alpha=0.1))
         ax.text(c[0], c[1], f'{i+1}', ha='center', va='center', color='C0', fontsize=16)
+    ax.set_xlabel('RA [deg]')
+    ax.set_ylabel('DEC [deg]')
     if return_ax:
         return ax
     
