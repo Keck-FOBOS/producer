@@ -21,7 +21,7 @@ The FOBOS Producer is used to plan FOBOS observations.
    :caption: API
    :maxdepth: 1
 
-   API <api/nirvana>
+   API <api/producer>
    Modules <api/modules>
 
 ----

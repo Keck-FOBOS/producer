@@ -1,4 +1,8 @@
+"""
+Various functions for generating hexagons and hexagonal grids.
 
+.. include:: ../include/links.rst
+"""
 import argparse
 
 from IPython import embed

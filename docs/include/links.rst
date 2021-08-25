@@ -1,4 +1,7 @@
 
+.. python
+.. _python.org: https://www.python.org/
+
 .. core
 .. _glob.glob: https://docs.python.org/3/library/glob.html
 .. _isinstance: https://docs.python.org/3/library/functions.html#isinstance
@@ -21,6 +24,7 @@
 .. _numpy.meshgrid: http://docs.scipy.org/doc/numpy/reference/generated/numpy.meshgrid.html
 .. _numpy.where: http://docs.scipy.org/doc/numpy/reference/generated/numpy.where.html
 .. _numpy.random.Generator: https://numpy.org/doc/stable/reference/random/generator.html
+.. _numpy.random.default_rng: https://numpy.org/doc/stable/reference/random/generator.html#numpy.random.default_rng
 
 .. scipy
 .. _scipy.optimize.least_squares: http://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.least_squares.html
