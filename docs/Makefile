@@ -22,11 +22,11 @@ apirst:
 	python ./scripts/write_script_help.py
 	python ./scripts/fobos_layout_table.py
 
-html:
-	make apirst
-	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
-
 htmlonly:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+
+html:
+	make apirst
+	make htmlonly
 
 

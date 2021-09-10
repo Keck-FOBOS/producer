@@ -1,6 +1,5 @@
 
 import os
-import sys
 from pkg_resources import get_distribution
 
 # Get configuration information from setup.cfg
@@ -57,9 +56,7 @@ napoleon_use_param = True
 napoleon_use_rtype = True
 
 # Autosection
-
 autosectionlabel_prefix_document = True
-
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
