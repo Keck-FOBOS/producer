@@ -25,7 +25,7 @@ class AllocSim(scriptbase.ScriptBase):
 
         parser = super().get_parser(description='FOBOS Allocation Simulation', width=width)
 
-        parser.add_argument('-d', '--density', nargs=3, default=[2.5, 40, 5],
+        parser.add_argument('-d', '--density', nargs=3, type=float, default=[2.5, 40, 5],
                             help='Target density sampling: minimum, maximum, number of samples.  '
                                  'Density is sampled geometrically.')
         parser.add_argument('-s', '--sims', type=int, default=1,
@@ -45,9 +45,9 @@ class AllocSim(scriptbase.ScriptBase):
 
         rng = numpy.random.default_rng(99)
 
-        ndens = args.density[-1]
+        ndens = int(args.density[2])
         nsim = args.sims
-        density = numpy.geomspace(*args.density)
+        density = numpy.geomspace(args.density[0], args.density[1], ndens)
         nobj = numpy.zeros((nsim, ndens), dtype=int)
         nobs = numpy.zeros((nsim, ndens), dtype=int)
         nalloc = numpy.empty((nsim, ndens), dtype=object)
@@ -61,7 +61,7 @@ class AllocSim(scriptbase.ScriptBase):
                 print(f'Density {i+1}/{ndens}', end='\r')
 
                 objx, objy = random_targets(10., density=density[i], rng=rng)
-                aptype = numpy.zeros(nobj[j,i], dtype=int)
+                aptype = numpy.zeros(objx.size, dtype=int)
 
                 n_in_fov, obs_obj, obs_nap, obs_ap, obs_mode \
                         = configure_observations(objx, objy, aptype)
@@ -113,6 +113,9 @@ class AllocSim(scriptbase.ScriptBase):
             m_fom[i] = numpy.ma.mean(arr, axis=0).filled(0.0)
             s_fom[i] = numpy.ma.std(arr, axis=0).filled(0.0)
 
+        logformatter = ticker.FuncFormatter(lambda y,pos: ('{{:.{:1d}f}}'.format(
+                                        int(numpy.maximum(-numpy.log10(y),0)))).format(y))
+
         w,h = pyplot.figaspect(1)
         fig = pyplot.figure(figsize=(1.5*w,1.5*h))
         ax = fig.add_axes([0.2, 0.69, 0.6, 0.3])
@@ -120,47 +123,77 @@ class AllocSim(scriptbase.ScriptBase):
         ax.tick_params(which='major', length=8, direction='in', top=True, right=True)
         ax.tick_params(which='minor', length=4, direction='in', top=True, right=True)
         ax.set_xlim(0.8, numpy.amax(nobs) + 0.2)
-        ax.set_ylim(0., 1.05)
+#        ax.set_ylim(0., 1.05)
+        ax.set_ylim(0.01, 1.05)
+        ax.set_yscale('log')
+        ax.yaxis.set_major_formatter(logformatter)
         ax.xaxis.set_major_formatter(ticker.NullFormatter())
+        ax.xaxis.set_major_locator(ticker.MultipleLocator(base=1))
         for i in range(ndens):
-            ax.fill_between(numpy.arange(max_nobs[i])+1, m_completeness[i] + s_completeness[i],
-                            y2=m_completeness[i] - s_completeness[i],
-                            color=f'C{i}', lw=0, alpha=0.2, zorder=1)
-            ax.scatter(numpy.arange(max_nobs[i])+1, m_completeness[i], color=f'C{i}',
-                    marker='.',  s=30, lw=0, zorder=3)
-            ax.plot(numpy.arange(max_nobs[i])+1, m_completeness[i], color=f'C{i}', zorder=3)
+#            ax.fill_between(numpy.arange(max_nobs[i])+1, m_completeness[i] + s_completeness[i],
+#                            y2=m_completeness[i] - s_completeness[i],
+#                            color=f'C{i}', lw=0, alpha=0.2, zorder=1)
+            _x = numpy.arange(max_nobs[i])+1
+            _y = 1 - m_completeness[i]
+            ax.scatter(_x, _y, color=f'C{i}', marker='.',  s=30, lw=0, zorder=3)
+            ax.plot(_x, _y, color=f'C{i}', zorder=3, label=r'$\rho$' + f' = {density[i]:.1f}')
+        ax.text(-0.1, 0.5, '1-Completeness', ha='center', va='center', transform=ax.transAxes,
+                rotation='vertical')
+        ax.legend()
 
         ax = fig.add_axes([0.2, 0.38, 0.6, 0.3])
         ax.minorticks_on()
         ax.tick_params(which='major', length=8, direction='in', top=True, right=True)
         ax.tick_params(which='minor', length=4, direction='in', top=True, right=True)
         ax.set_xlim(0.8, numpy.amax(nobs) + 0.2)
-        ax.set_ylim(0., 1.05)
+#        ax.set_ylim(0., 1.05)
+        ax.set_ylim(0.01, 1.05)
+        ax.set_yscale('log')
+        ax.yaxis.set_major_formatter(logformatter)
         ax.xaxis.set_major_formatter(ticker.NullFormatter())
+        ax.xaxis.set_major_locator(ticker.MultipleLocator(base=1))
         for i in range(ndens):
-            ax.fill_between(numpy.arange(max_nobs[i])+1, m_efficiency[i] + s_efficiency[i],
-                            y2=m_efficiency[i] - s_efficiency[i],
-                            color=f'C{i}', lw=0, alpha=0.2, zorder=1)
-            ax.scatter(numpy.arange(max_nobs[i])+1, m_efficiency[i], color=f'C{i}',
-                    marker='.', s=30, lw=0, zorder=3)
-            ax.plot(numpy.arange(max_nobs[i])+1, m_efficiency[i], color=f'C{i}', zorder=3)
+#            ax.fill_between(numpy.arange(max_nobs[i])+1, m_efficiency[i] + s_efficiency[i],
+#                            y2=m_efficiency[i] - s_efficiency[i],
+#                            color=f'C{i}', lw=0, alpha=0.2, zorder=1)
+            _x = numpy.arange(max_nobs[i])+1
+            _y = m_efficiency[i]
+            ax.scatter(_x, _y, color=f'C{i}', marker='.', s=30, lw=0, zorder=3)
+            ax.plot(_x, _y, color=f'C{i}', zorder=3)
+        ax.text(-0.1, 0.5, 'Efficiency', ha='center', va='center', transform=ax.transAxes,
+                rotation='vertical')
 
         ax = fig.add_axes([0.2, 0.07, 0.6, 0.3])
         ax.minorticks_on()
         ax.tick_params(which='major', length=8, direction='in', top=True, right=True)
         ax.tick_params(which='minor', length=4, direction='in', top=True, right=True)
         ax.set_xlim(0.8, numpy.amax(nobs) + 0.2)
-        ax.set_ylim(0., 1.05)
+#        ax.set_ylim(0., 1.05)
+        ax.set_ylim(0.1, 1.05)
+        ax.set_yscale('log')
+        ax.yaxis.set_major_formatter(logformatter)
+        ax.xaxis.set_major_locator(ticker.MultipleLocator(base=1))
         for i in range(ndens):
-            ax.fill_between(numpy.arange(max_nobs[i])+1, m_fom[i] + s_fom[i],
-                            y2=m_fom[i] - s_fom[i],
-                            color=f'C{i}', lw=0, alpha=0.2, zorder=1)
-            ax.scatter(numpy.arange(max_nobs[i])+1, m_fom[i],
-                    color=f'C{i}', marker='.', s=30, lw=0, zorder=3)
-            ax.plot(numpy.arange(max_nobs[i])+1, m_fom[i],
-                    color=f'C{i}', zorder=3)
+#            ax.fill_between(numpy.arange(max_nobs[i])+1, m_fom[i] + s_fom[i],
+#                            y2=m_fom[i] - s_fom[i],
+#                            color=f'C{i}', lw=0, alpha=0.2, zorder=1)
+            _x = numpy.arange(max_nobs[i])+1
+            _y = m_fom[i]
+            ax.scatter(_x, _y, color=f'C{i}', marker='.', s=30, lw=0, zorder=3)
+            ax.plot(_x, _y, color=f'C{i}', zorder=3)
+        ax.text(-0.1, 0.5, 'Figure-of-Merit', ha='center', va='center', transform=ax.transAxes,
+                rotation='vertical')
+        ax.text(0.5, -0.15, 'Pointing Number', ha='center', va='center', transform=ax.transAxes)
 
-        pyplot.show()
+        ofile = None
+        ofile = 'example_allocsim.png'
+        if ofile is None:
+            pyplot.show()
+        else:
+            fig.canvas.print_figure(ofile, bbox_inches='tight')
+        fig.clear()
+        pyplot.close(fig)
+
 
 
 

@@ -194,5 +194,52 @@ the plot using the ``--full`` option:
    collisions with allocated apertures.
    
 
+An observing plan figure-of-merit
+=================================
+
+[This should be better integrated into the docs.  I am including it here largely
+so that I don't lose/forget it!]
+
+When optimizing the use of FOBOS, we could consider the following derivation of
+a figure-of-merit. 
+
+Let N be the total number of targets to be observed for a given program, and
+let's make the following assumptions:
+
+ - all the objects are observed for the same amount of time, and
+ - the "signal-to-noise" (S/N) of the observations scales as sqrt(N).
+
+We can write the total number of observed targets as
+
+n = sum^p_k eta_k A = p <eta> A,
+
+where p is the number of pointings and each pointing k allocates a fraction
+eta_k of the available number of apertures A (e.g., the total number of
+single-fiber apertures); <eta> is the mean eta over all pointings observed so
+far.  Ideal performance is when every pointing has perfect efficiency; i.e.,
+eta_k = 1.  A relevant figure-of-merit can be cast as the ratio of the acquired
+S/N to the required observing time relative to the ideal instrument:
+
+E = (s / t) / (S / T) = s/S * T/t,
+
+where S is the S/N reached by the ideal instrument in time T, and s and t are
+the complementary quantities for the real instruments.  For N total program
+targets, we can write s/S = sqrt(n/N) and T/t = <eta>.  Therefore,
+
+E = sqrt(f) <eta>
+
+where the program completeness is f = n/N.  The aggregate completeness of the
+observations increases with more pointings, whereas the average allocation
+efficiency decreases, such that E should exhibit a maximum.
+
+.. figure:: figures/example_allocsim.png
+   :width: 50 %
+
+   Simulation of allocating single-fiber FOBOS apertures to a random set of data
+   with different densities (per sq. arcmin; see legend).  From top to bottome,
+   the panels show the fraction of objects remaining to be observed (1 - n/N),
+   the allocation efficiency of each pointing, and the above derived
+   figure-of-merit, E, as a function of the number of pointings.
+   
 
 

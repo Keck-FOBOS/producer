@@ -13,8 +13,6 @@ class Layout(scriptbase.ScriptBase):
 
     @classmethod
     def get_parser(cls, width=None):
-        import argparse
-
         parser = super().get_parser(description='Show FOBOS aperture deployment for a given mode',
                                     width=width)
         parser.add_argument('--mode', nargs='*', default=1, type=int,

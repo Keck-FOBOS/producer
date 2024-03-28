@@ -1,6 +1,5 @@
 
-from pathlib import Path
-from pkg_resources import resource_filename
+from importlib import resources
 
 from IPython import embed
 
@@ -56,9 +55,10 @@ def write_deployment_table(ofile):
 
 def main():
 
-    path = Path(resource_filename('producer', '')).parent / 'docs' / 'include'
+    root = resources.files('producer').parent
+    path = root / 'docs' / 'include'
     if not path.is_dir():
-        path.mkdir()
+        path.mkdir(parents=True)
 
     ofile = path / 'fobos_deployments.rst'
     write_deployment_table(str(ofile))

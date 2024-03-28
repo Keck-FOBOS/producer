@@ -11,7 +11,7 @@
     positional arguments:
       target_file           Name of a file with targets to be observed
     
-    optional arguments:
+    options:
       -h, --help            show this help message and exit
       -m [MODE ...], --mode [MODE ...]
                             The spectrograph mode. If None, mode is
