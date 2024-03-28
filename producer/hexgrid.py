@@ -168,7 +168,7 @@ def hexgrid_grid_convert(n, d, incircle=False, d_unit='cell', full=False):
 
     # Calculate the incircle of the full grid
     _d = d if incircle else hexgrid_circle_convert(d)
-    # Get the circumcircle of the grid cel
+    # Get the circumcircle of the grid cell
     cell_d = _d/(n - (n//2)/2 - (numpy.cos(numpy.pi/3) if full else 0.0))
     # Return the diameter with the definition that matches the input
     return hexgrid_circle_convert(cell_d) if incircle else cell_d

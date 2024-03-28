@@ -280,7 +280,8 @@ class FOBOSApertures:
                              f"{', '.join(valid)}")
         return self.active & self.ap_bm.flagged(self.type, payload.upper())
 
-    def show(self, include_patrol=False, by_spec=False, legend=True):
+    def show(self, include_patrol=False, by_spec=False, legend=True, ax=None, show=True,
+             s=40, show_all=False):
         """
         Make a plot of the currently active apertures.
 
@@ -295,82 +296,116 @@ class FOBOSApertures:
                 Include the plot legend
         """
 
-        w,h = pyplot.figaspect(1)
-        fig = pyplot.figure(figsize=(1.5*w,1.5*h))
-        ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
-        ax.set_xlim([-14, 14])
-        ax.set_ylim([-14, 14])
-        ax.minorticks_on()
-        ax.grid(True, which='major', color='0.9', zorder=0, linestyle='-')
-        ax.tick_params(which='major', direction='in', length=8, top=True, right=True)
-        ax.tick_params(which='minor', direction='in', length=4, top=True, right=True)
+        if ax is None:
+            w,h = pyplot.figaspect(1)
+            fig = pyplot.figure(figsize=(1.5*w,1.5*h))
+            ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
+            ax.set_xlim([-14, 14])
+            ax.set_ylim([-14, 14])
+            ax.minorticks_on()
+            ax.grid(True, which='major', color='0.9', zorder=0, linestyle='-')
+            ax.tick_params(which='major', direction='in', length=8, top=True, right=True)
+            ax.tick_params(which='minor', direction='in', length=4, top=True, right=True)
+            ax.set_xlabel(r'$\xi$ [arcmin]')
+            ax.set_ylabel(r'$\eta$ [arcmin]')
 
         # Single fibers
-        indx = self.active & (self.payload == 0)
+        indx = self.payload == 0
+        if self.baseline:
+            indx &= self.in_baseline
+        if not show_all:
+            indx &= self.active
         if by_spec:
             _indx = indx & (self.spc == 1)
             ax.scatter(self.coo[_indx,0], self.coo[_indx,1],
-                       marker='.', s=40, lw=0, color='C0', zorder=5, label='Single Fiber (Spec 1)')
+                       marker='.', s=s, lw=0, color='C0', zorder=5, label='Single Fiber (Spec 1)')
             _indx = indx & (self.spc == 2)
             ax.scatter(self.coo[_indx,0], self.coo[_indx,1],
-                       marker='.', s=40, lw=0, color='C2', zorder=5, label='Single Fiber (Spec 2)')
+                       marker='.', s=s, lw=0, color='C2', zorder=5, label='Single Fiber (Spec 2)')
             _indx = indx & (self.spc == 3)
             ax.scatter(self.coo[_indx,0], self.coo[_indx,1],
-                       marker='.', s=40, lw=0, color='C4', zorder=5, label='Single Fiber (Spec 3)')
+                       marker='.', s=s, lw=0, color='C4', zorder=5, label='Single Fiber (Spec 3)')
         else:
             ax.scatter(self.coo[indx,0], self.coo[indx,1],
-                    marker='.', s=40, lw=0, color='C1', zorder=5, label='Single Fiber')
+                    marker='.', s=s, lw=0, color='C0', zorder=5, label='Single Fiber')
         # IFUs
-        indx = self.active & (self.payload == 1)
+        indx = self.payload == 1
+        if self.baseline:
+            indx &= self.in_baseline
+        if not show_all:
+            indx &= self.active
         if by_spec:
             _indx = indx & (self.spc == 1)
             ax.scatter(self.coo[_indx,0], self.coo[_indx,1],
-                       marker='s', s=20, lw=0.5, color='C0',zorder=5, label='IFU (Spec 1)')
+                       marker='s', s=s//2, lw=0.5, color='C0',zorder=5, label='IFU (Spec 1)')
             _indx = indx & (self.spc == 2)
             ax.scatter(self.coo[_indx,0], self.coo[_indx,1],
-                       marker='s', s=20, lw=0.5, color='C2',zorder=5, label='IFU (Spec 2)')
+                       marker='s', s=s//2, lw=0.5, color='C2',zorder=5, label='IFU (Spec 2)')
             _indx = indx & (self.spc == 3)
             ax.scatter(self.coo[_indx,0], self.coo[_indx,1],
-                       marker='s', s=20, lw=0.5, color='C4',zorder=5, label='IFU (Spec 3)')
+                       marker='s', s=s//2, lw=0.5, color='C4',zorder=5, label='IFU (Spec 3)')
         else:
             ax.scatter(self.coo[indx,0], self.coo[indx,1],
-                       marker='s', s=20, lw=0.5, color='C2',zorder=5, label='IFU')
+                       marker='s', s=s//2, lw=0.5, color='C1',zorder=5, label='IFU')
 
         # Guide bundles
-        indx = self.active & (self.payload == 3)
+        indx = self.payload == 3
+        if self.baseline:
+            indx &= self.in_baseline
+        if not show_all:
+            indx &= self.active
         ax.scatter(self.coo[indx,0], self.coo[indx,1],
-                    marker='o', s=20, lw=0.5, color='C3', zorder=5, label='Guide Bundle')
+                    marker='o', s=s//2, lw=0.5, color='C3', zorder=5, label='Guide Bundle')
+
         # Flux-calibration bundles
-        indx = self.active & (self.payload == 4)
+        indx = self.payload == 4
+        if self.baseline:
+            indx &= self.in_baseline
+        if not show_all:
+            indx &= self.active
         if by_spec:
             _indx = indx & (self.spc == 1)
             ax.scatter(self.coo[_indx,0], self.coo[_indx,1],
-                       marker='x', s=20, lw=1, color='C0', zorder=5, label='Calib. Bundle (Spec 1)')
+                       marker='x', s=s//2, lw=1, color='C0', zorder=5,
+                       label='Calib. Bundle (Spec 1)')
             _indx = indx & (self.spc == 2)
             ax.scatter(self.coo[_indx,0], self.coo[_indx,1],
-                       marker='x', s=20, lw=1, color='C2', zorder=5, label='Calib. Bundle (Spec 1)')
+                       marker='x', s=s//2, lw=1, color='C2', zorder=5,
+                       label='Calib. Bundle (Spec 1)')
             _indx = indx & (self.spc == 3)
             ax.scatter(self.coo[_indx,0], self.coo[_indx,1],
-                       marker='x', s=20, lw=1, color='C4', zorder=5, label='Calib. Bundle (Spec 1)')
+                       marker='x', s=s//2, lw=1, color='C4', zorder=5,
+                       label='Calib. Bundle (Spec 1)')
         else:
             ax.scatter(self.coo[indx,0], self.coo[indx,1],
-                       marker='x', s=20, lw=1, color='C4', zorder=5, label='Calib. Bundle')
+                       marker='x', s=s//2, lw=1, color='C4', zorder=5,
+                       label='Calib. Bundle')
 
         # Include the patrol region (this in combination with the legend can
         # make the plot very slow)
         if include_patrol:
-            indx = self.active & numpy.isin(self.payload, [0,1,3,4])
+            indx = numpy.isin(self.payload, [0,1,3,4])
+            if self.baseline:
+                indx &= self.in_baseline
+            if not show_all:
+                indx &= self.active
             for x, y in self.coo[indx]:
                 ax.add_patch(patches.Circle((x,y), radius=138/60., facecolor='k',
                                             edgecolor='none', zorder=3, alpha=0.05))
+
+        # Big IFU
+        if show_all:
+            ax.add_patch(patches.RegularPolygon((9.6,0.), 6, radius=0.3, facecolor='C0',
+                         edgecolor='C0', zorder=4, label='Monolithic IFU', alpha=0.3))
+
         # FOBOS field-of-view
         ax.add_patch(patches.Circle((0.,0.), radius=10., facecolor='none', edgecolor='C3',
                                     zorder=4, label='FOBOS FOV'))
         if legend:
-            ax.legend()
-        ax.set_xlabel(r'$\xi$ [arcmin]')
-        ax.set_ylabel(r'$\eta$ [arcmin]')
-        pyplot.show()
+            ax.legend(ncol=2)
+        if show:
+            pyplot.show()
+        return None if show else ax
 
 
 

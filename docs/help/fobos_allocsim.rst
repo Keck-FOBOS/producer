@@ -5,7 +5,7 @@
     
     FOBOS Allocation Simulation
     
-    optional arguments:
+    options:
       -h, --help            show this help message and exit
       -d DENSITY DENSITY DENSITY, --density DENSITY DENSITY DENSITY
                             Target density sampling: minimum, maximum, number of

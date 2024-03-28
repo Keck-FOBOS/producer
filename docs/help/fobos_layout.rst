@@ -5,7 +5,7 @@
     
     Show FOBOS aperture deployment for a given mode
     
-    optional arguments:
+    options:
       -h, --help         show this help message and exit
       --mode [MODE ...]  FOBOS spectrograph mode(s). Can be a single integer,
                          defining a single mode for all spectrographs, or a set of
